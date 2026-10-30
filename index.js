@@ -64,6 +64,18 @@ app.use(cors(corsOptions));
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
+const cors = require("cors");
+
+app.use(
+  cors({
+    origin: [
+      "https://nova-cart-lovat.vercel.app",
+      "http://localhost:5173",
+    ],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // ==========================================
 // API ROUTES
