@@ -6,7 +6,7 @@ const {
   createPaymentOrder,
   verifyPayment,
   handlePaymentFailure,
-} = require("../controllers/paymentController");
+} = require("../../controllers/paymentController");
 
 const { protect } = require("../middleware/authMiddleware");
 

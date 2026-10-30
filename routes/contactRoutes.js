@@ -7,7 +7,7 @@ const {
   getContacts,
   updateContactStatus,
   deleteContact,
-} = require("../controllers/contactController");
+} = require("../../controllers/contactController");
 
 const {
   protect,

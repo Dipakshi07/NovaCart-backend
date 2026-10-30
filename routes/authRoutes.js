@@ -7,7 +7,7 @@ const {
   loginUser,
   getProfile,
   updateProfile,
-} = require("../controllers/authController");
+} = require("../../controllers/authController");
 
 const { protect } = require("../middleware/authMiddleware");
 

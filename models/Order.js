@@ -1,7 +1,9 @@
 
 const mongoose = require("mongoose");
 
-// Individual product inside an order
+/*
+ * Individual product inside an order
+ */
 const orderItemSchema = new mongoose.Schema(
   {
     product: {
@@ -9,20 +11,24 @@ const orderItemSchema = new mongoose.Schema(
       ref: "Product",
       required: true,
     },
+
     name: {
       type: String,
       required: true,
       trim: true,
     },
+
     image: {
       type: String,
       default: "",
     },
+
     price: {
       type: Number,
       required: true,
       min: 0,
     },
+
     quantity: {
       type: Number,
       required: true,
@@ -36,21 +42,87 @@ const orderItemSchema = new mongoose.Schema(
   { _id: false }
 );
 
-// Shipping address
+/*
+ * Shipping address
+ */
 const shippingAddressSchema = new mongoose.Schema(
   {
-    fullName: { type: String, required: true, trim: true },
-    phone: { type: String, required: true, trim: true },
-    address: { type: String, required: true, trim: true },
-    city: { type: String, required: true, trim: true },
-    state: { type: String, required: true, trim: true },
-    postalCode: { type: String, required: true, trim: true },
-    country: { type: String, default: "India", trim: true },
+    fullName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    address: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    state: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    postalCode: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    country: {
+      type: String,
+      default: "India",
+      trim: true,
+    },
   },
   { _id: false }
 );
 
-// Main order schema
+/*
+ * Order tracking history
+ *
+ * Every time admin changes order status,
+ * a new entry is added here.
+ */
+const trackingHistorySchema = new mongoose.Schema(
+  {
+    status: {
+      type: String,
+      enum: [
+        "Ordered",
+        "Shipping",
+        "Out for Delivery",
+        "Delivered",
+        "Cancelled",
+      ],
+      required: true,
+    },
+
+    date: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+);
+
+/*
+ * Main Order Schema
+ */
 const orderSchema = new mongoose.Schema(
   {
     user: {
@@ -63,9 +135,13 @@ const orderSchema = new mongoose.Schema(
     items: {
       type: [orderItemSchema],
       required: true,
+
       validate: {
-        validator: (items) => items.length > 0,
-        message: "An order must contain at least one product",
+        validator: (items) =>
+          Array.isArray(items) && items.length > 0,
+
+        message:
+          "An order must contain at least one product",
       },
     },
 
@@ -74,6 +150,9 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
+    /*
+     * Payment method
+     */
     paymentMethod: {
       type: String,
       enum: ["COD", "ONLINE"],
@@ -81,13 +160,23 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
+    /*
+     * Payment status
+     */
     paymentStatus: {
       type: String,
-      enum: ["Pending", "Paid", "Failed", "Refunded"],
+      enum: [
+        "Pending",
+        "Paid",
+        "Failed",
+        "Refunded",
+      ],
       default: "Pending",
     },
 
-    // Razorpay payment information
+    /*
+     * Razorpay information
+     */
     razorpayOrderId: {
       type: String,
       default: null,
@@ -105,29 +194,123 @@ const orderSchema = new mongoose.Schema(
       select: false,
     },
 
+    /*
+     * Current delivery status
+     *
+     * Customer-facing status:
+     *
+     * Ordered
+     * Shipping
+     * Out for Delivery
+     * Delivered
+     * Cancelled
+     */
     status: {
       type: String,
+
       enum: [
-        "Pending",
-        "Processing",
-        "Shipped",
+        "Ordered",
+        "Shipping",
+        "Out for Delivery",
         "Delivered",
         "Cancelled",
       ],
-      default: "Pending",
+
+      default: "Ordered",
+
+      required: true,
     },
 
+    /*
+     * Complete tracking timeline
+     */
+    trackingHistory: {
+      type: [trackingHistorySchema],
+
+      default: function () {
+        return [
+          {
+            status: "Ordered",
+            date: new Date(),
+          },
+        ];
+      },
+    },
+
+    /*
+     * Important delivery dates
+     */
+    orderedAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    shippedAt: {
+      type: Date,
+      default: null,
+    },
+
+    outForDeliveryAt: {
+      type: Date,
+      default: null,
+    },
+
+    deliveredAt: {
+      type: Date,
+      default: null,
+    },
+
+    cancelledAt: {
+      type: Date,
+      default: null,
+    },
+
+    /*
+     * Estimated delivery date
+     */
+    expectedDeliveryDate: {
+      type: Date,
+      default: null,
+    },
+
+    /*
+     * Total order amount
+     */
     totalAmount: {
       type: Number,
       required: true,
       min: 0,
     },
   },
-  { timestamps: true }
+
+  {
+    timestamps: true,
+  }
 );
 
-orderSchema.index({ user: 1, createdAt: -1 });
-orderSchema.index({ status: 1, createdAt: -1 });
-orderSchema.index({ razorpayOrderId: 1 }, { sparse: true });
+/*
+ * Useful indexes
+ */
+orderSchema.index({
+  user: 1,
+  createdAt: -1,
+});
 
-module.exports = mongoose.model("Order", orderSchema);
+orderSchema.index({
+  status: 1,
+  createdAt: -1,
+});
+
+orderSchema.index(
+  {
+    razorpayOrderId: 1,
+  },
+  {
+    sparse: true,
+  }
+);
+
+module.exports = mongoose.model(
+  "Order",
+  orderSchema
+);

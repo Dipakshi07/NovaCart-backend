@@ -11,7 +11,7 @@ const {
   getAllUsers,
   getAllOrders,
   updateOrderStatus,
-} = require("../controllers/adminController");
+} = require("../../controllers/adminController");
 
 const {
   protect,
