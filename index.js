@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 // ==========================================
 
 const allowedOrigins = (
-  process.env.CLIENT_URL || "http://localhost:5173"
+  process.env.CLIENT_URL || "https://nova-cart-lovat.vercel.app/"
 )
   .split(",")
   .map((origin) => origin.trim().replace(/\/$/, ""))
@@ -158,12 +158,12 @@ const startServer = async () => {
     server = app.listen(PORT, () => {
       console.log("======================================");
       console.log("🚀 NovaCart Backend Started");
-      console.log(`🌐 Server: http://localhost:${PORT}`);
-      console.log(`🔐 Auth: http://localhost:${PORT}/api/auth`);
-      console.log(`🛍️ Products: http://localhost:${PORT}/api/products`);
-      console.log(`🛒 Cart: http://localhost:${PORT}/api/cart`);
-      console.log(`📦 Orders: http://localhost:${PORT}/api/orders`);
-      console.log(`💳 Payments: http://localhost:${PORT}/api/payments`);
+      console.log(`🌐 Server: https://novacart-backend-1.onrender.com`);
+      console.log(`🔐 Auth: https://novacart-backend-1.onrender.com/api/auth`);
+      console.log(`🛍️ Products: https://novacart-backend-1.onrender.com/api/products`);
+      console.log(`🛒 Cart: https://novacart-backend-1.onrender.com/api/cart`);
+      console.log(`📦 Orders: https://novacart-backend-1.onrender.com/api/orders`);
+      console.log(`💳 Payments: https://novacart-backend-1.onrender.com/api/payments`);
       console.log("======================================");
     });
 
