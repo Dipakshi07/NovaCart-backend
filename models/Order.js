@@ -1,9 +1,6 @@
-
 const mongoose = require("mongoose");
 
-/*
- * Individual product inside an order
- */
+// Individual product inside an order
 const orderItemSchema = new mongoose.Schema(
   {
     product: {
@@ -11,24 +8,20 @@ const orderItemSchema = new mongoose.Schema(
       ref: "Product",
       required: true,
     },
-
     name: {
       type: String,
       required: true,
       trim: true,
     },
-
     image: {
       type: String,
       default: "",
     },
-
     price: {
       type: Number,
       required: true,
       min: 0,
     },
-
     quantity: {
       type: Number,
       required: true,
@@ -42,62 +35,21 @@ const orderItemSchema = new mongoose.Schema(
   { _id: false }
 );
 
-/*
- * Shipping address
- */
+// Shipping address
 const shippingAddressSchema = new mongoose.Schema(
   {
-    fullName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    phone: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    address: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    city: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    state: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    postalCode: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    country: {
-      type: String,
-      default: "India",
-      trim: true,
-    },
+    fullName: { type: String, required: true, trim: true },
+    phone: { type: String, required: true, trim: true },
+    address: { type: String, required: true, trim: true },
+    city: { type: String, required: true, trim: true },
+    state: { type: String, required: true, trim: true },
+    postalCode: { type: String, required: true, trim: true },
+    country: { type: String, default: "India", trim: true },
   },
   { _id: false }
 );
 
-/*
- * Order tracking history
- *
- * Every time admin changes order status,
- * a new entry is added here.
- */
+// Order tracking history
 const trackingHistorySchema = new mongoose.Schema(
   {
     status: {
@@ -111,7 +63,6 @@ const trackingHistorySchema = new mongoose.Schema(
       ],
       required: true,
     },
-
     date: {
       type: Date,
       default: Date.now,
@@ -120,9 +71,7 @@ const trackingHistorySchema = new mongoose.Schema(
   { _id: false }
 );
 
-/*
- * Main Order Schema
- */
+// Main Order Schema
 const orderSchema = new mongoose.Schema(
   {
     user: {
@@ -135,13 +84,10 @@ const orderSchema = new mongoose.Schema(
     items: {
       type: [orderItemSchema],
       required: true,
-
       validate: {
         validator: (items) =>
           Array.isArray(items) && items.length > 0,
-
-        message:
-          "An order must contain at least one product",
+        message: "An order must contain at least one product",
       },
     },
 
@@ -150,9 +96,6 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
-    /*
-     * Payment method
-     */
     paymentMethod: {
       type: String,
       enum: ["COD", "ONLINE"],
@@ -160,23 +103,12 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
-    /*
-     * Payment status
-     */
     paymentStatus: {
       type: String,
-      enum: [
-        "Pending",
-        "Paid",
-        "Failed",
-        "Refunded",
-      ],
+      enum: ["Pending", "Paid", "Failed", "Refunded"],
       default: "Pending",
     },
 
-    /*
-     * Razorpay information
-     */
     razorpayOrderId: {
       type: String,
       default: null,
@@ -194,20 +126,9 @@ const orderSchema = new mongoose.Schema(
       select: false,
     },
 
-    /*
-     * Current delivery status
-     *
-     * Customer-facing status:
-     *
-     * Ordered
-     * Shipping
-     * Out for Delivery
-     * Delivered
-     * Cancelled
-     */
+    // Customer-facing delivery status
     status: {
       type: String,
-
       enum: [
         "Ordered",
         "Shipping",
@@ -215,18 +136,13 @@ const orderSchema = new mongoose.Schema(
         "Delivered",
         "Cancelled",
       ],
-
       default: "Ordered",
-
       required: true,
     },
 
-    /*
-     * Complete tracking timeline
-     */
+    // Tracking timeline
     trackingHistory: {
       type: [trackingHistorySchema],
-
       default: function () {
         return [
           {
@@ -237,9 +153,7 @@ const orderSchema = new mongoose.Schema(
       },
     },
 
-    /*
-     * Important delivery dates
-     */
+    // Important dates
     orderedAt: {
       type: Date,
       default: Date.now,
@@ -265,52 +179,32 @@ const orderSchema = new mongoose.Schema(
       default: null,
     },
 
-    /*
-     * Estimated delivery date
-     */
+    // Expected delivery: 7 days after order placement
     expectedDeliveryDate: {
       type: Date,
-      default: null,
+      default: function () {
+        const deliveryDate = new Date(
+          this.orderedAt || Date.now()
+        );
+        deliveryDate.setDate(deliveryDate.getDate() + 7);
+        return deliveryDate;
+      },
     },
 
-    /*
-     * Total order amount
-     */
     totalAmount: {
       type: Number,
       required: true,
       min: 0,
     },
   },
-
   {
     timestamps: true,
   }
 );
 
-/*
- * Useful indexes
- */
-orderSchema.index({
-  user: 1,
-  createdAt: -1,
-});
+// Useful indexes
+orderSchema.index({ user: 1, createdAt: -1 });
+orderSchema.index({ status: 1, createdAt: -1 });
+orderSchema.index({ razorpayOrderId: 1 }, { sparse: true });
 
-orderSchema.index({
-  status: 1,
-  createdAt: -1,
-});
-
-orderSchema.index(
-  {
-    razorpayOrderId: 1,
-  },
-  {
-    sparse: true,
-  }
-);
-
-module.exports = mongoose.model(
-  "Order",
-  orderSchema
-);
+module.exports = mongoose.model("Order", orderSchema);
